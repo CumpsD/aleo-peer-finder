@@ -25,6 +25,7 @@ namespace AleoPeerFinder
         {
             Client.DefaultRequestHeaders.Accept.Clear();
             Client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Aleo Peer Finder");
+            Client.Timeout = TimeSpan.FromMilliseconds(500);
 
             Console.WriteLine($"Processing {SyncNodes.Count} sync nodes.");
             await ProcessNodes(SyncNodes);
@@ -88,7 +89,7 @@ namespace AleoPeerFinder
                         var rpcResponse = await rpcCall.Content.ReadFromJsonAsync<NodeState>(cancellationToken: ct);
 
                         if (rpcResponse != null)
-                            ProcessNode(node, rpcResponse.Result);
+                            ProcessNode(fetchCount, node, rpcResponse.Result);
                     }
                     catch (Exception e)
                     {
@@ -97,11 +98,11 @@ namespace AleoPeerFinder
                 });
         }
 
-        private static void ProcessNode(string node, NodeStateResult result)
+        private static void ProcessNode(int fetchCount, string node, NodeStateResult result)
         {
             var currentHigh = Nodes.Max(x => x.Value.Weight);
             if (result.LatestCumulativeWeight > currentHigh)
-                Console.WriteLine($"New highest weight found! {result.LatestCumulativeWeight} for {node}");
+                Console.WriteLine($"#{fetchCount,5} | New highest weight found! {result.LatestCumulativeWeight} for {node}");
 
             Nodes.AddOrUpdate(
                 node,
