@@ -142,10 +142,6 @@ namespace AleoPeerFinder
             Console.WriteLine($"Found {nodes.Count} nodes.");
             Console.WriteLine();
 
-            foreach (var (_, node) in nodes)
-                Console.WriteLine($"{node.Ip,22} - {node.Block,5} / {node.Weight,5}");
-
-            Console.WriteLine();
             Console.WriteLine("Paste this in environment/mod.rs");
             Console.WriteLine();
 
@@ -154,6 +150,9 @@ namespace AleoPeerFinder
             Console.WriteLine($"    const BEACON_NODES: [&'static str; {NodesToTake}] = [");
             Console.WriteLine($"      {highestNodes}");
             Console.WriteLine("    ];");
+
+            foreach (var (_, node) in nodes)
+                Console.WriteLine($"{node.Ip,22} - {node.Block,5} / {node.Weight,5}");
         }
     }
 }
