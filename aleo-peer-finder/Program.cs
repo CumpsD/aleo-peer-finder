@@ -6,7 +6,7 @@ namespace AleoPeerFinder
 {
     public static class Program
     {
-        private const int MaxNumberOfLoops = 10;
+        private const int MaxNumberOfLoops = 50;
         private const int NodesToTake = 50;
 
         private static readonly HttpClient Client = new();
@@ -41,7 +41,9 @@ namespace AleoPeerFinder
                     .Select(x => x.Key)
                     .ToList();
 
+                Console.WriteLine();
                 Console.WriteLine($"Processing {newNodes.Count} new nodes.");
+                Console.WriteLine();
 
                 await ProcessNodes(newNodes);
                 numberOfLoops++;
