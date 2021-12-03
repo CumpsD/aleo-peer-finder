@@ -59,9 +59,10 @@ namespace AleoPeerFinder
             Console.WriteLine("Paste this in environment/mod.rs");
             Console.WriteLine();
 
-            var highestNodes = string.Join(", ", nodes.Take(30).Select(x => $"\"{x.Value.Ip}\""));
+            var nodesToTake = 50;
+            var highestNodes = string.Join(", ", nodes.Take(nodesToTake).Select(x => $"\"{x.Value.Ip}\""));
 
-            Console.WriteLine("    const SYNC_NODES: [&'static str; 30] = [");
+            Console.WriteLine($"    const SYNC_NODES: [&'static str; {nodesToTake}] = [");
             Console.WriteLine($"      {highestNodes}");
             Console.WriteLine("    ];");
         }
