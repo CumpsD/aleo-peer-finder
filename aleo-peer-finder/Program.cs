@@ -42,7 +42,7 @@ namespace AleoPeerFinder
                     .ToList();
 
                 Console.WriteLine();
-                Console.WriteLine($"Processing {newNodes.Count} new nodes.");
+                Console.WriteLine($"Processing {newNodes.Count} new nodes. (loop #{numberOfLoops + 1}");
                 Console.WriteLine();
 
                 await ProcessNodes(newNodes);
