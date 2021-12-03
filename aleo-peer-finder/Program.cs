@@ -66,7 +66,7 @@ namespace AleoPeerFinder
 
             var highestNodes = string.Join(", ", nodes.Take(NodesToTake).Select(x => $"\"{x.Value.Ip}\""));
 
-            Console.WriteLine($"    const SYNC_NODES: [&'static str; {NodesToTake}] = [");
+            Console.WriteLine($"    const BEACON_NODES: [&'static str; {NodesToTake}] = [");
             Console.WriteLine($"      {highestNodes}");
             Console.WriteLine("    ];");
         }
