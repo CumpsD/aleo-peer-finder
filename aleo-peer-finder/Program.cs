@@ -25,7 +25,7 @@ namespace AleoPeerFinder
         {
             Client.DefaultRequestHeaders.Accept.Clear();
             Client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Aleo Peer Finder");
-            Client.Timeout = TimeSpan.FromMilliseconds(500);
+            Client.Timeout = TimeSpan.FromMilliseconds(1000);
 
             Console.WriteLine($"Processing {SyncNodes.Count} sync nodes.");
             await ProcessNodes(SyncNodes);
@@ -91,8 +91,12 @@ namespace AleoPeerFinder
                         if (rpcResponse != null)
                             ProcessNode(fetchCount, node, rpcResponse.Result);
                     }
+                    catch (TimeoutException) {}
                     catch (Exception e)
                     {
+                        if (e.InnerException is TimeoutException)
+                            return;
+
                         Console.WriteLine($"#{fetchCount,5} | Fetching info for {node} failed: {e.Message}");
                     }
                 });
