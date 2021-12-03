@@ -6,9 +6,12 @@ namespace AleoPeerFinder
 {
     public static class Program
     {
+        private const int MaxNumberOfLoops = 10;
+        private const int NodesToTake = 50;
+
         private static readonly HttpClient Client = new();
 
-        private static readonly string RpcBody = "{ \"jsonrpc\": \"2.0\", \"id\": \"1\", \"method\": \"getnodestate\", \"params\": [] }";
+        private const string RpcBody = "{ \"jsonrpc\": \"2.0\", \"id\": \"1\", \"method\": \"getnodestate\", \"params\": [] }";
 
         private static readonly List<string> SyncNodes = new()
         {
@@ -31,7 +34,7 @@ namespace AleoPeerFinder
             await ProcessNodes(SyncNodes);
 
             var numberOfLoops = 0;
-            while (numberOfLoops < 2 && Nodes.Values.Any(x => x.Block == null))
+            while (numberOfLoops < MaxNumberOfLoops && Nodes.Values.Any(x => x.Block == null))
             {
                 var newNodes = Nodes
                     .Where(x => x.Value.Block == null)
@@ -59,10 +62,9 @@ namespace AleoPeerFinder
             Console.WriteLine("Paste this in environment/mod.rs");
             Console.WriteLine();
 
-            var nodesToTake = 50;
-            var highestNodes = string.Join(", ", nodes.Take(nodesToTake).Select(x => $"\"{x.Value.Ip}\""));
+            var highestNodes = string.Join(", ", nodes.Take(NodesToTake).Select(x => $"\"{x.Value.Ip}\""));
 
-            Console.WriteLine($"    const SYNC_NODES: [&'static str; {nodesToTake}] = [");
+            Console.WriteLine($"    const SYNC_NODES: [&'static str; {NodesToTake}] = [");
             Console.WriteLine($"      {highestNodes}");
             Console.WriteLine("    ];");
         }
