@@ -61,9 +61,9 @@ namespace AleoPeerFinder
 
             var highestNodes = string.Join(", ", nodes.Take(30).Select(x => $"\"{x.Value.Ip}\""));
 
-            Console.WriteLine("const SYNC_NODES: [&'static str; 30] = [");
-            Console.WriteLine(highestNodes);
-            Console.WriteLine("];");
+            Console.WriteLine("    const SYNC_NODES: [&'static str; 30] = [");
+            Console.WriteLine($"      {highestNodes}");
+            Console.WriteLine("    ];");
         }
 
         private static async Task ProcessNodes(IEnumerable<string> nodes)
