@@ -67,26 +67,34 @@ namespace AleoPeerFinder
 
         private static async Task ProcessNodes(IEnumerable<string> nodes)
         {
-            await Parallel.ForEachAsync(nodes, async (node, ct) =>
+            var parallelOptions = new ParallelOptions
             {
-                var fetchCount = Interlocked.Increment(ref _fetchCount);
+                MaxDegreeOfParallelism = Environment.ProcessorCount * 4
+            };
 
-                try
+            await Parallel.ForEachAsync(
+                nodes,
+                parallelOptions,
+                async (node, ct) =>
                 {
+                    var fetchCount = Interlocked.Increment(ref _fetchCount);
 
-                    Console.WriteLine($"#{fetchCount,3} Fetching info for {node}");
+                    try
+                    {
 
-                    var rpcCall = await Client.PostAsync($"http://{node}:3032", new StringContent(RpcBody), ct);
-                    var rpcResponse = await rpcCall.Content.ReadFromJsonAsync<NodeState>(cancellationToken: ct);
+                        Console.WriteLine($"#{fetchCount,3} Fetching info for {node}");
 
-                    if (rpcResponse != null)
-                        ProcessNode(node, rpcResponse.Result);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"#{fetchCount,3} Fetching info for {node} failed: {e.Message}");
-                }
-            });
+                        var rpcCall = await Client.PostAsync($"http://{node}:3032", new StringContent(RpcBody), ct);
+                        var rpcResponse = await rpcCall.Content.ReadFromJsonAsync<NodeState>(cancellationToken: ct);
+
+                        if (rpcResponse != null)
+                            ProcessNode(node, rpcResponse.Result);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"#{fetchCount,3} Fetching info for {node} failed: {e.Message}");
+                    }
+                });
         }
 
         private static void ProcessNode(string node, NodeStateResult result)
