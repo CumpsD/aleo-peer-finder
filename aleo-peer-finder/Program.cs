@@ -101,6 +101,8 @@ namespace AleoPeerFinder
                             return;
 
                         Console.WriteLine($"#{fetchCount,5} | Fetching info for {node} failed: {e.Message}");
+
+                        Nodes.TryRemove(node, out _);
                     }
                 });
         }
