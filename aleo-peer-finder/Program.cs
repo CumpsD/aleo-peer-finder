@@ -82,7 +82,7 @@ namespace AleoPeerFinder
                     try
                     {
 
-                        Console.WriteLine($"#{fetchCount,3} Fetching info for {node}");
+                        Console.WriteLine($"#{fetchCount,5} | Fetching info for {node}");
 
                         var rpcCall = await Client.PostAsync($"http://{node}:3032", new StringContent(RpcBody), ct);
                         var rpcResponse = await rpcCall.Content.ReadFromJsonAsync<NodeState>(cancellationToken: ct);
@@ -92,7 +92,7 @@ namespace AleoPeerFinder
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"#{fetchCount,3} Fetching info for {node} failed: {e.Message}");
+                        Console.WriteLine($"#{fetchCount,5} | Fetching info for {node} failed: {e.Message}");
                     }
                 });
         }
