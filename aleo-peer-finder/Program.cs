@@ -26,12 +26,27 @@ namespace AleoPeerFinder
 
         public static async Task Main()
         {
+            var cts = new CancellationTokenSource();
+            var ct = cts.Token;
+
+            Console.CancelKeyPress += (_, _) =>
+            {
+                Task.Run(async () =>
+                {
+                    await Task.Delay(500);
+                    cts.Cancel();
+                });
+
+                ct.WaitHandle.WaitOne();
+                PrintResults();
+            };
+
             Client.DefaultRequestHeaders.Accept.Clear();
             Client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Aleo Peer Finder");
             Client.Timeout = TimeSpan.FromMilliseconds(1000);
 
             Console.WriteLine($"Processing {SyncNodes.Count} sync nodes.");
-            await ProcessNodes(SyncNodes);
+            await ProcessNodes(SyncNodes, ct);
 
             var numberOfLoops = 0;
             while (numberOfLoops < MaxNumberOfLoops && Nodes.Values.Any(x => x.Block == null))
@@ -42,40 +57,22 @@ namespace AleoPeerFinder
                     .ToList();
 
                 Console.WriteLine();
-                Console.WriteLine($"Processing {newNodes.Count} new nodes. (loop #{numberOfLoops + 1}");
+                Console.WriteLine($"Processing {newNodes.Count} new nodes. (loop #{numberOfLoops + 1})");
                 Console.WriteLine();
 
-                await ProcessNodes(newNodes);
+                await ProcessNodes(newNodes, ct);
                 numberOfLoops++;
             }
 
-            var nodes = Nodes
-                .Where(x => x.Value.Block != null)
-                .OrderByDescending(x => x.Value.Weight)
-                .ToList();
-
-            Console.WriteLine();
-            Console.WriteLine($"Found {nodes.Count} nodes.");
-            Console.WriteLine();
-
-            foreach (var (_, node) in nodes)
-                Console.WriteLine($"{node.Ip,22} - {node.Block,5} / {node.Weight,5}");
-
-            Console.WriteLine("Paste this in environment/mod.rs");
-            Console.WriteLine();
-
-            var highestNodes = string.Join(", ", nodes.Take(NodesToTake).Select(x => $"\"{x.Value.Ip}\""));
-
-            Console.WriteLine($"    const BEACON_NODES: [&'static str; {NodesToTake}] = [");
-            Console.WriteLine($"      {highestNodes}");
-            Console.WriteLine("    ];");
+            PrintResults();
         }
 
-        private static async Task ProcessNodes(IEnumerable<string> nodes)
+        private static async Task ProcessNodes(IEnumerable<string> nodes, CancellationToken cancellationToken)
         {
             var parallelOptions = new ParallelOptions
             {
-                MaxDegreeOfParallelism = Environment.ProcessorCount * 4
+                MaxDegreeOfParallelism = Environment.ProcessorCount * 4,
+                CancellationToken = cancellationToken
             };
 
             await Parallel.ForEachAsync(
@@ -87,7 +84,6 @@ namespace AleoPeerFinder
 
                     try
                     {
-
                         Console.WriteLine($"#{fetchCount,5} | Fetching info for {node}");
 
                         var rpcCall = await Client.PostAsync($"http://{node}:3032", new StringContent(RpcBody), ct);
@@ -133,6 +129,31 @@ namespace AleoPeerFinder
         {
             foreach (var peer in peers)
                 Nodes.TryAdd(peer.Split(":")[0], new NodeDetails(peer));
+        }
+
+        private static void PrintResults()
+        {
+            var nodes = Nodes
+                .Where(x => x.Value.Block != null)
+                .OrderByDescending(x => x.Value.Weight)
+                .ToList();
+
+            Console.WriteLine();
+            Console.WriteLine($"Found {nodes.Count} nodes.");
+            Console.WriteLine();
+
+            foreach (var (_, node) in nodes)
+                Console.WriteLine($"{node.Ip,22} - {node.Block,5} / {node.Weight,5}");
+
+            Console.WriteLine();
+            Console.WriteLine("Paste this in environment/mod.rs");
+            Console.WriteLine();
+
+            var highestNodes = string.Join(", ", nodes.Take(NodesToTake).Select(x => $"\"{x.Value.Ip}\""));
+
+            Console.WriteLine($"    const BEACON_NODES: [&'static str; {NodesToTake}] = [");
+            Console.WriteLine($"      {highestNodes}");
+            Console.WriteLine("    ];");
         }
     }
 }
